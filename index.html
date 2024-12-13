@@ -1,13 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golden Studios</title>
-    <link rel="icon" type="image/x-icon" href="GoldenStudios.ico">
-    <style>
-        @import url(https://themes.googleusercontent.com/fonts/css?kit=9vYsg5VgPHKK8SXYbf3sMhCTimaIMz1Y4Lh482AIUAY);
-
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <style type="text/css">
         ol {
             margin: 0;
             padding: 0;
@@ -17,47 +12,27 @@
             padding: 0;
         }
 
-        .c5 {
-            -webkit-text-decoration-skip: none;
-            color: #ffffff;
+        .c1 {
+            color: #000000;
             font-weight: 400;
-            text-decoration: underline;
-            text-decoration-skip-ink: none;
+            text-decoration: none;
+            vertical-align: baseline;
+            font-size: 11pt;
+            font-family: "Arial";
+            font-style: normal;
+        }
+
+        .c2 {
+            color: #000000;
+            font-weight: 400;
+            text-decoration: none;
+            vertical-align: baseline;
             font-size: 21pt;
-            font-family: "Calibri";
+            font-family: "Arial";
+            font-style: normal;
         }
 
         .c0 {
-            color: #ffffff;
-            font-weight: 400;
-            text-decoration: none;
-            vertical-align: baseline;
-            font-size: 15pt;
-            font-family: "Calibri";
-            font-style: normal;
-        }
-
-        .c8 {
-            color: #ffffff;
-            font-weight: 400;
-            text-decoration: none;
-            vertical-align: baseline;
-            font-size: 7pt;
-            font-family: "Calibri";
-            font-style: normal;
-        }
-
-        .c3 {
-            color: #ffffff;
-            font-weight: 400;
-            text-decoration: none;
-            vertical-align: baseline;
-            font-size: 23pt;
-            font-family: "Calibri";
-            font-style: normal;
-        }
-
-        .c1 {
             padding-top: 0pt;
             padding-bottom: 0pt;
             line-height: 1.15;
@@ -66,55 +41,10 @@
             text-align: center;
         }
 
-        .c4 {
-            padding-top: 0pt;
-            padding-bottom: 0pt;
-            line-height: 1.15;
-            orphans: 2;
-            widows: 2;
-            text-align: left;
-        }
-
-        .c7 {
-            font-size: 21pt;
-            font-family: "Permanent Marker";
-            color: #ffffff;
-            font-weight: 400;
-        }
-
-        .c12 {
-            color: #ffffff;
-            font-weight: 400;
-            font-size: 8pt;
-            font-family: "Courier New";
-        }
-
-        .c9 {
-            font-size: 15pt;
-            font-family: "Permanent Marker";
-            color: #ffffff;
-            font-weight: 400;
-        }
-
-        .c10 {
-            text-decoration: none;
-            vertical-align: baseline;
-            font-style: normal;
-        }
-
-        .c6 {
-            background-color: #000000;
-            max-width: 1280pt;
+        .c3 {
+            background-color: #ffffff;
+            max-width: 468pt;
             padding: 72pt 72pt 72pt 72pt;
-        }
-
-        .c11 {
-            color: inherit;
-            text-decoration: inherit;
-        }
-
-        .c2 {
-            height: 11pt;
         }
 
         .title {
@@ -234,96 +164,18 @@
             widows: 2;
             text-align: left;
         }
-
-        .content {
-            max-width: 1280px;
-            margin: auto;
-        }
-
-        /* New login section styles */
-        form {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            max-width: 300px;
-        }
-
-        label {
-            margin-bottom: 5px;
-        }
-
-        input {
-            padding: 8px;
-            margin-bottom: 10px;
-        }
-
-        button {
-            padding: 10px;
-            background-color: #ffffff;
-            color: #000000;
-            cursor: pointer;
-        }
-
-        .message {
-            margin-top: 15px;
-            font-size: 14px;
-        }
-
-        .success {
-            color: #ffffff; /* White color for success message */
-        }
-
-        .error {
-            color: #ff0000; /* Red color for error message */
-        }
     </style>
-    <script>
-        function login() {
-            var username = document.getElementById("username").value;
-            var password = document.getElementById("password").value;
-            var messageElement = document.getElementById("message");
-
-            // Check if the provided username and password match the allowed accounts
-            if (
-                (username === "FlapjckCEO" && password === "flapjck@)!!") ||
-                (username === "FlapjckConcepter" && password === "flapjck0100011101010011") ||
-                (username === "FlapjckLeadCreative" && password === "flapjckezzywezzy")
-            ) {
-                messageElement.textContent = "Login Successful!";
-                messageElement.classList.remove("error");
-                messageElement.classList.add("success");
-
-                // Redirect to "messageindex.html"
-                window.location.href = "messageindex.html";
-            } else {
-                messageElement.textContent = "Invalid username or password. Please try again.";
-                messageElement.classList.remove("success");
-                messageElement.classList.add("error");
-            }
-        }
-    </script>
 </head>
-<body class="c6 doc-content">
-    <div class="content">
-        <p class="c1 c2"><span class="c3"></span></p>
-        <p class="c1"></p>
-        <span class="c1 c3">Pretend this is just the original flapjack page... This is just a placeholder.  GL coding.</span>
-
-        <!-- New login section -->
-        <div>
-            <h2>Login</h2>
-            <form>
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-
-                <button type="button" onclick="login()">Login</button>
-            </form>
-
-            <div id="message" class="message"></div>
-        </div>
-    </div>
+<body class="c3 doc-content">
+    <p class="c0">
+        <span class="c2">Essay Grading Machine Replica for Ohio State Test</span>
+    </p>
+    <p class="c0">
+        <span class="c1">Machine Created by Ajay Elswick, Rory Hinkle, Samuel Ehas, and several other contributors</span>
+    </p>
+    <p class="c0">
+        <span>Website Created by Ajay Elswick and Rory’s ChatGPT shenanigans</span>
+    </p>
 </body>
 </html>
+
