@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Essay Grader Results</title>
+</head>
+<body>
+    <h1>Grading Results</h1>
+    <p><strong>Organization Score:</strong> {{ scores["organization"] }} - {{ results["organization"] }}</p>
+    <p><strong>Elaboration Score:</strong> {{ scores["elaboration"] }} - {{ results["elaboration"] }}</p>
+    <p><strong>Conventions Score:</strong> {{ scores["conventions"] }} - {{ results["conventions"] }}</p>
+    <h2>Total Score: {{ total_score }}/10</h2>
+    <a href="/">Grade Another Essay</a>
+</body>
+</html>
