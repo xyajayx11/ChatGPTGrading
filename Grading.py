@@ -1,149 +1,66 @@
-import nltk
-import numpy as np
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
+from flask import Flask, request, render_template
+import spacy
 
-# Step 1: Load and preprocess data
-def load_data(filepath):
-    """
-    Load the dataset from a CSV file.
-    
-    Args:
-        filepath (str): Path to the CSV file.
+app = Flask(__name__)
+nlp = spacy.load("en_core_web_sm")
 
-    Returns:
-        pandas.DataFrame: Loaded data.
-    """
-    try:
-        data = pd.read_csv(filepath)
-        return data
-    except FileNotFoundError:
-        print(f"Error: File {filepath} not found.")
-        return None
+def grade_essay(essay):
+    doc = nlp(essay)
+    pfo_score = grade_pfo(doc)
+    ee_score = grade_ee(doc)
+    conventions_score = grade_conventions(essay)
+    return {"PFO": pfo_score, "EE": ee_score, "Conventions": conventions_score}
 
-# Step 2: Text preprocessing
-nltk.download('punkt')
+def grade_pfo(doc):
+    thesis_keywords = ["thesis", "claim", "argument", "main idea", "position"]
+    transition_keywords = ["first", "second", "finally", "in conclusion", "next", "therefore"]
+    intro_keywords = ["introduction", "overview"]
+    conclusion_keywords = ["conclusion", "final thoughts", "summary"]
+    thesis_found = any(keyword in doc.text.lower() for keyword in thesis_keywords)
+    transitions_found = sum(1 for token in doc if token.text.lower() in transition_keywords) > 3
+    intro_found = any(keyword in doc.text.lower() for keyword in intro_keywords)
+    conclusion_found = any(keyword in doc.text.lower() for keyword in conclusion_keywords)
+    if thesis_found and transitions_found and intro_found and conclusion_found:
+        return 4
+    elif thesis_found and transitions_found:
+        return 3
+    elif thesis_found or intro_found or conclusion_found:
+        return 2
+    else:
+        return 1
 
-def preprocess(text):
-    """
-    Preprocess text by tokenizing and lowercasing.
+def grade_ee(doc):
+    evidence_keywords = ["evidence", "example", "fact", "detail", "study", "source", "data", "research"]
+    academic_vocab = ["significant", "crucial", "impact", "perspective", "interpretation", "theory", "framework"]
+    evidence_found = sum(1 for token in doc if token.text.lower() in evidence_keywords) > 2
+    vocab_used = sum(1 for token in doc if token.text.lower() in academic_vocab) > 3
+    if evidence_found and vocab_used:
+        return 4
+    elif evidence_found or vocab_used:
+        return 3
+    elif any(token.text.lower() in evidence_keywords for token in doc):
+        return 2
+    else:
+        return 1
 
-    Args:
-        text (str): Input text.
+def grade_conventions(essay):
+    doc = nlp(essay)
+    spelling_errors = sum(1 for token in doc if token.is_alpha and not nlp.vocab.has_vector(token.text.lower()))
+    grammar_errors = sum(1 for token in doc if token.pos_ in ['VERB', 'ADJ', 'NOUN'] and len(token.text) > 15)
+    if spelling_errors == 0 and grammar_errors == 0:
+        return 2
+    elif spelling_errors <= 2 and grammar_errors <= 2:
+        return 1
+    else:
+        return 0
 
-    Returns:
-        str: Preprocessed text.
-    """
-    tokens = nltk.word_tokenize(text.lower())
-    return ' '.join(tokens)
-
-# Step 3: Convert text to numerical features
-def vectorize_text(texts):
-    """
-    Convert text data into numerical features using TF-IDF.
-
-    Args:
-        texts (list): List of preprocessed text.
-
-    Returns:
-        tuple: (TF-IDF vectorized array, fitted vectorizer).
-    """
-    vectorizer = TfidfVectorizer(max_features=5000)
-    X = vectorizer.fit_transform(texts).toarray()
-    return X, vectorizer
-
-# Step 4: Train/test split
-def split_data(features, labels):
-    """
-    Split data into training and testing sets.
-
-    Args:
-        features (numpy.ndarray): Feature matrix.
-        labels (numpy.ndarray): Label array.
-
-    Returns:
-        tuple: Train/test splits for features and labels.
-    """
-    return train_test_split(features, labels, test_size=0.2, random_state=42)
-
-# Step 5: Train a model
-def train_model(X_train, y_train):
-    """
-    Train a Random Forest Regressor model.
-
-    Args:
-        X_train (numpy.ndarray): Training features.
-        y_train (numpy.ndarray): Training labels.
-
-    Returns:
-        sklearn.ensemble.RandomForestRegressor: Trained model.
-    """
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-    return model
-
-# Step 6: Evaluate the model
-def evaluate_model(model, X_test, y_test):
-    """
-    Evaluate the model using Mean Squared Error.
-
-    Args:
-        model: Trained model.
-        X_test (numpy.ndarray): Testing features.
-        y_test (numpy.ndarray): True labels for testing set.
-
-    Returns:
-        float: Mean Squared Error of predictions.
-    """
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
-    return mse
-
-# Step 7: Predict new scores
-def grade_essay(model, vectorizer, new_essay):
-    """
-    Predict a score for a new essay.
-
-    Args:
-        model: Trained model.
-        vectorizer: Fitted TF-IDF vectorizer.
-        new_essay (str): Essay to grade.
-
-    Returns:
-        float: Predicted score.
-    """
-    new_essay_cleaned = preprocess(new_essay)
-    new_essay_vectorized = vectorizer.transform([new_essay_cleaned]).toarray()
-    predicted_score = model.predict(new_essay_vectorized)
-    return predicted_score[0]
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        essay = request.form["essay"]
+        grades = grade_essay(essay)
+        return render_template("index.html", grades=grades, essay=essay)
+    return render_template("index.html")
 
 if __name__ == "__main__":
-    # Load data
-    data = load_data('data/essay_dataset.csv')
-    if data is not None:
-        essays = data['essay']
-        scores = data['score']
-
-        # Preprocess essays
-        essays_cleaned = essays.apply(preprocess)
-
-        # Vectorize essays
-        X, vectorizer = vectorize_text(essays_cleaned)
-
-        # Split data
-        X_train, X_test, y_train, y_test = split_data(X, scores)
-
-        # Train model
-        model = train_model(X_train, y_train)
-
-        # Evaluate model
-        mse = evaluate_model(model, X_test, y_test)
-        print(f'Mean Squared Error: {mse}')
-
-        # Example prediction
-        new_essay = "This is an example essay to grade."
-        predicted_score = grade_essay(model, vectorizer, new_essay)
-        print(f"Predicted Score: {predicted_score}")
+    app.run(debug=True)
