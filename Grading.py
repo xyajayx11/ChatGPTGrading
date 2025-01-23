@@ -1,66 +1,69 @@
-from flask import Flask, request, render_template
-import spacy
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
-nlp = spacy.load("en_core_web_sm")
 
-def grade_essay(essay):
-    doc = nlp(essay)
-    pfo_score = grade_pfo(doc)
-    ee_score = grade_ee(doc)
-    conventions_score = grade_conventions(essay)
-    return {"PFO": pfo_score, "EE": ee_score, "Conventions": conventions_score}
+# Predefined rubrics for grading
+RUBRICS = {
+    "organization": {
+        4: "Highly effective organization and logical progression of ideas.",
+        3: "Effective organization with logical progression and minor flaws.",
+        2: "Some organization but with inconsistent logic and progression.",
+        1: "Minimal organization with limited progression.",
+        0: "No clear organization."
+    },
+    "elaboration": {
+        4: "Fully developed ideas with strong evidence and explanation.",
+        3: "Well-developed ideas with some evidence and explanation.",
+        2: "Some evidence or explanation, but inconsistently developed.",
+        1: "Limited evidence or explanation; weakly developed ideas.",
+        0: "No clear evidence or explanation."
+    },
+    "conventions": {
+        2: "Few to no errors in grammar, spelling, or punctuation.",
+        1: "Some errors in grammar, spelling, or punctuation, but they do not impede understanding.",
+        0: "Many errors that impede understanding."
+    }
+}
 
-def grade_pfo(doc):
-    thesis_keywords = ["thesis", "claim", "argument", "main idea", "position"]
-    transition_keywords = ["first", "second", "finally", "in conclusion", "next", "therefore"]
-    intro_keywords = ["introduction", "overview"]
-    conclusion_keywords = ["conclusion", "final thoughts", "summary"]
-    thesis_found = any(keyword in doc.text.lower() for keyword in thesis_keywords)
-    transitions_found = sum(1 for token in doc if token.text.lower() in transition_keywords) > 3
-    intro_found = any(keyword in doc.text.lower() for keyword in intro_keywords)
-    conclusion_found = any(keyword in doc.text.lower() for keyword in conclusion_keywords)
-    if thesis_found and transitions_found and intro_found and conclusion_found:
-        return 4
-    elif thesis_found and transitions_found:
-        return 3
-    elif thesis_found or intro_found or conclusion_found:
-        return 2
-    else:
-        return 1
-
-def grade_ee(doc):
-    evidence_keywords = ["evidence", "example", "fact", "detail", "study", "source", "data", "research"]
-    academic_vocab = ["significant", "crucial", "impact", "perspective", "interpretation", "theory", "framework"]
-    evidence_found = sum(1 for token in doc if token.text.lower() in evidence_keywords) > 2
-    vocab_used = sum(1 for token in doc if token.text.lower() in academic_vocab) > 3
-    if evidence_found and vocab_used:
-        return 4
-    elif evidence_found or vocab_used:
-        return 3
-    elif any(token.text.lower() in evidence_keywords for token in doc):
-        return 2
-    else:
-        return 1
-
-def grade_conventions(essay):
-    doc = nlp(essay)
-    spelling_errors = sum(1 for token in doc if token.is_alpha and not nlp.vocab.has_vector(token.text.lower()))
-    grammar_errors = sum(1 for token in doc if token.pos_ in ['VERB', 'ADJ', 'NOUN'] and len(token.text) > 15)
-    if spelling_errors == 0 and grammar_errors == 0:
-        return 2
-    elif spelling_errors <= 2 and grammar_errors <= 2:
-        return 1
-    else:
-        return 0
-
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        essay = request.form["essay"]
-        grades = grade_essay(essay)
-        return render_template("index.html", grades=grades, essay=essay)
+# Home Page
+@app.route('/')
+def home():
     return render_template("index.html")
+
+# Grading Route
+@app.route('/grade', methods=["POST"])
+def grade():
+    essay = request.form.get("essay")
+    scores = {}
+
+    # Analyze organization
+    if len(essay.split()) > 200:  # Example logic
+        scores["organization"] = 4
+    elif len(essay.split()) > 150:
+        scores["organization"] = 3
+    elif len(essay.split()) > 100:
+        scores["organization"] = 2
+    elif len(essay.split()) > 50:
+        scores["organization"] = 1
+    else:
+        scores["organization"] = 0
+
+    # Analyze elaboration (word count, depth, quotes)
+    if 'for example' in essay or 'this shows' in essay:
+        scores["elaboration"] = 4 if len(essay.split()) > 200 else 3
+    elif 'because' in essay:
+        scores["elaboration"] = 2
+    else:
+        scores["elaboration"] = 1 if len(essay.split()) > 50 else 0
+
+    # Analyze conventions (spelling or grammar errors as an example)
+    errors = sum([1 for word in essay.split() if word.lower() not in ["the", "and", "is", "a", "to", "in"]])  # Simple error simulation
+    scores["conventions"] = 2 if errors < 5 else 1 if errors < 10 else 0
+
+    # Return results
+    results = {category: RUBRICS[category][score] for category, score in scores.items()}
+    total_score = sum(scores.values())
+    return render_template("result.html", scores=scores, results=results, total_score=total_score)
 
 if __name__ == "__main__":
     app.run(debug=True)
