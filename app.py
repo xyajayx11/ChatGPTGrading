@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Blueprint, render_template, request
 
-app = Flask(__name__)
+main = Blueprint('main', __name__)
 
 # Predefined rubrics for grading
 RUBRICS = {
@@ -26,12 +26,12 @@ RUBRICS = {
 }
 
 # Home Page
-@app.route('/')
+@main.route('/')
 def home():
     return render_template("index.html")
 
 # Grading Route
-@app.route('/grade', methods=["POST"])
+@main.route('/grade', methods=["POST"])
 def grade():
     essay = request.form.get("essay")
     scores = {}
@@ -64,6 +64,3 @@ def grade():
     results = {category: RUBRICS[category][score] for category, score in scores.items()}
     total_score = sum(scores.values())
     return render_template("result.html", scores=scores, results=results, total_score=total_score)
-
-if __name__ == "__main__":
-    app.run(debug=True)
